@@ -22,6 +22,17 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>519379439373-ubqlo7ou6aqcbrnocv4ctgfi35997vqe</string>
+			</array>
+		</dict>
+	</array>
+	<key>GIDClientID</key>
+	<string>519379439373-ubqlo7ou6aqcbrnocv4ctgfi35997vqe.apps.googleusercontent.com</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>
