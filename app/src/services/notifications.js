@@ -26,10 +26,12 @@ export async function registerWebPush(userId) {
     })
 
     // Salva no banco
+    const subJson = sub.toJSON()
     await supabase.from('push_subscriptions').upsert({
       user_id: userId,
-      subscription: sub.toJSON()
-    }, { onConflict: 'user_id,subscription->>endpoint' })
+      subscription: subJson,
+      endpoint: subJson.endpoint
+    }, { onConflict: 'user_id,endpoint' })
 
     console.log('[push] subscription registrada')
   } catch (e) {
