@@ -73,12 +73,6 @@ jobs:
           echo "$PROVISIONING_PROFILE_BASE64" | base64 --decode \
             > ~/Library/MobileDevice/Provisioning\ Profiles/basher.mobileprovision
 
-      # ── Bump build number ────────────────────────────────────────────────
-      - name: Bump build number
-        run: |
-          cd app/ios/App
-          xcrun agvtool new-version -all ${{ github.run_number }}
-
       # ── Build & Archive ──────────────────────────────────────────────────
       - name: Build archive
         run: |
@@ -93,6 +87,7 @@ jobs:
             PROVISIONING_PROFILE_SPECIFIER="Basher" \
             CODE_SIGN_IDENTITY="iPhone Distribution" \
             DEVELOPMENT_TEAM=${{ secrets.APPLE_TEAM_ID }} \
+            CURRENT_PROJECT_VERSION=${{ github.run_number }} \
             2>&1 | tee /tmp/xcodebuild.log | xcpretty --color
 
           if [ ! -d "$RUNNER_TEMP/Basher.xcarchive" ]; then
