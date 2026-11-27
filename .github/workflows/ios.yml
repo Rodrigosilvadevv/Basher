@@ -95,7 +95,7 @@ jobs:
             -archivePath $RUNNER_TEMP/Basher.xcarchive \
             -destination "generic/platform=iOS" \
             CODE_SIGN_STYLE=Manual \
-            PROVISIONING_PROFILE_SPECIFIER="Basher AppStore" \
+            PROVISIONING_PROFILE_SPECIFIER="Basher" \
             CODE_SIGN_IDENTITY="iPhone Distribution" \
             DEVELOPMENT_TEAM=${{ secrets.APPLE_TEAM_ID }} \
             -allowProvisioningUpdates \
@@ -121,7 +121,7 @@ jobs:
             <key>provisioningProfiles</key>
             <dict>
               <key>br.com.basher.app</key>
-              <string>Basher AppStore</string>
+              <string>Basher</string>
             </dict>
           </dict>
           </plist>
