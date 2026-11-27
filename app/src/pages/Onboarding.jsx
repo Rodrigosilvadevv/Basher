@@ -147,13 +147,18 @@ export default function Onboarding({ onFinished }) {
       next: () => run(async () => {
         let c;
         try {
-          c = await getPosition();
+          // Timeout de 15s: cobre requestPermissions + getCurrentPosition
+          c = await Promise.race([
+            getPosition(),
+            new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 15000)),
+          ]);
         } catch {
           c = fallbackCoords();
           toast('Não conseguimos sua localização. Você pode ativar depois nas configurações.', 'info');
         }
         setCoords(c);
-        await api.updateLocation(c.lat, c.lng);
+        // Não bloqueia: falha silenciosa não impede avançar
+        api.updateLocation(c.lat, c.lng).catch(() => {});
         goto(5);
       }),
     },
@@ -183,20 +188,15 @@ export default function Onboarding({ onFinished }) {
         await api.updatePrivate({ accepted_terms_at: now, sensitive_consent_at: now });
         const sig = await requestAgeSignal();
         if (!sig.ok) {
-          if (sig.reason === 'native_only') {
-            // PWA/web: pula verificação de idade (autodeclaração via data de nascimento já foi validada)
-            await api.recordAgeSignal(18, 'web_self_declaration').catch(() => {});
-          } else if (sig.reason === 'DECLINED_SHARING') {
-            throw new Error('Para entrar, permita compartilhar sua faixa etária (só “18+”) quando o iPhone perguntar.');
-          } else if (sig.lower != null && sig.lower < 18) {
+          if (sig.reason === 'native_only') throw new Error('A verificação de idade é feita no app do Basher para iPhone.');
+          if (sig.reason === 'DECLINED_SHARING') throw new Error('Para entrar, permita compartilhar sua faixa etária (só “18+”) quando o iPhone perguntar.');
+          if (sig.lower != null && sig.lower < 18) {
             await api.recordAgeSignal(sig.lower, sig.source).catch(() => {});
             throw new Error('UNDERAGE');
-          } else {
-            await api.recordAgeSignal(18, 'web_self_declaration').catch(() => {});
           }
-        } else {
-          await api.recordAgeSignal(sig.lower, sig.source);
+          throw new Error('AGE_VERIFICATION_REQUIRED');
         }
+        await api.recordAgeSignal(sig.lower, sig.source);
         await api.completeOnboarding();
         await refresh();
         setOb({ step: 0, done: true });

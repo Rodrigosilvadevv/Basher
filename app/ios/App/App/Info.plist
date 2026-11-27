@@ -43,6 +43,15 @@
 	</array>
 	<key>GIDClientID</key>
 	<string>519379439373-ubqlo7ou6aqcbrnocv4ctgfi35997vqe.apps.googleusercontent.com</string>
+	<!-- Permissões de privacidade (obrigatórias no iOS) -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>O Basher usa sua localização para mostrar pessoas próximas. Sua posição exata nunca é salva.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>O Basher usa a câmera para você adicionar fotos ao perfil e aos álbuns privados.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>O Basher acessa sua galeria para você escolher fotos para o perfil e álbuns privados.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>O Basher pode salvar fotos na sua galeria.</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>
