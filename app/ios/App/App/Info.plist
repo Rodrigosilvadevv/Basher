@@ -24,6 +24,16 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>CFBundleURLTypes</key>
 	<array>
+		<!-- Deep link: basher://auth/callback -->
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>br.com.basher.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>basher</string>
+			</array>
+		</dict>
+		<!-- Google OAuth callback -->
 		<dict>
 			<key>CFBundleURLSchemes</key>
 			<array>
