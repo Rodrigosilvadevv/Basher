@@ -17,11 +17,18 @@ export async function requestAgeSignal() {
     if (r.status === 'SHARING') {
       return { ok: (r.ageLower ?? 0) >= 18, lower: r.ageLower ?? 0, source: `apple_declared_age_range:${r.declarationSource || 'UNKNOWN'}` };
     }
-    if (r.status === 'NOT_AVAILABLE' && storeFallback) {
-      return { ok: true, lower: 18, source: 'app_store_18plus_rating' };
+    // Qualquer outro status (NOT_AVAILABLE, NOT_DETERMINED, DECLINED_SHARING, etc.)
+    // → se storeFallback estiver ativo, usa o rating 18+ da App Store
+    if (storeFallback) {
+      return { ok: true, lower: 18, source: `app_store_18plus_rating:${r.status}` };
     }
     return { ok: false, reason: r.status };
   } catch (e) {
+    // Erro técnico (entitlement ausente, plugin não disponível, etc.)
+    // → usa o rating 18+ da App Store como evidência de maioridade
+    if (storeFallback) {
+      return { ok: true, lower: 18, source: 'app_store_18plus_rating' };
+    }
     return { ok: false, reason: 'ERROR', error: String(e?.message || e) };
   }
 }
