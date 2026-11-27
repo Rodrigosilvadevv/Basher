@@ -48,18 +48,6 @@ jobs:
         working-directory: app
         run: npx cap sync ios
 
-      # ── Ruby + CocoaPods ─────────────────────────────────────────────────
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.3'
-          bundler-cache: true
-          working-directory: app/ios/App
-
-      - name: Install CocoaPods
-        working-directory: app/ios/App
-        run: pod install --repo-update
-
       # ── Certificados ─────────────────────────────────────────────────────
       - name: Import signing certificate
         env:
@@ -89,7 +77,7 @@ jobs:
       - name: Build archive
         run: |
           xcodebuild archive \
-            -workspace app/ios/App/App.xcworkspace \
+            -project app/ios/App/App.xcodeproj \
             -scheme "$XCODE_SCHEME" \
             -configuration Release \
             -archivePath $RUNNER_TEMP/Basher.xcarchive \
@@ -98,7 +86,6 @@ jobs:
             PROVISIONING_PROFILE_SPECIFIER="Basher" \
             CODE_SIGN_IDENTITY="iPhone Distribution" \
             DEVELOPMENT_TEAM=${{ secrets.APPLE_TEAM_ID }} \
-            -allowProvisioningUpdates \
             | xcpretty
 
       - name: Export IPA
@@ -126,7 +113,6 @@ jobs:
           </dict>
           </plist>
           EOF
-          # Injeta o Team ID real
           sed -i '' "s/SUBSTITUA_SEU_TEAM_ID/${{ secrets.APPLE_TEAM_ID }}/g" /tmp/ExportOptions.plist
           xcodebuild -exportArchive \
             -archivePath $RUNNER_TEMP/Basher.xcarchive \
@@ -134,7 +120,7 @@ jobs:
             -exportOptionsPlist /tmp/ExportOptions.plist \
             | xcpretty
 
-      # ── Upload TestFlight ────────────────────────────────────────────────
+      # ── Upload TestFlight ─────────────────────────────────────────────────
       - name: Upload to TestFlight via altool
         env:
           APPLE_ID: ${{ secrets.APPLE_ID }}
@@ -147,7 +133,7 @@ jobs:
             --password "$APP_SPECIFIC_PASSWORD" \
             --verbose
 
-      # ── Artefato (backup) ────────────────────────────────────────────────
+      # ── Artefato (backup) ─────────────────────────────────────────────────
       - name: Upload IPA as artifact
         uses: actions/upload-artifact@v4
         if: always()
