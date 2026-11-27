@@ -25,13 +25,12 @@ export async function registerWebPush(userId) {
       applicationServerKey: urlB64ToUint8(vapidKey)
     })
 
-    // Salva no banco
+    // Salva no banco (ignora duplicata silenciosamente)
     const subJson = sub.toJSON()
-    await supabase.from('push_subscriptions').upsert({
+    await supabase.from('push_subscriptions').insert({
       user_id: userId,
       subscription: subJson,
-      endpoint: subJson.endpoint
-    }, { onConflict: 'user_id,endpoint' })
+    }).throwOnError().catch(() => {}) // ignora conflito de unique
 
     console.log('[push] subscription registrada')
   } catch (e) {
