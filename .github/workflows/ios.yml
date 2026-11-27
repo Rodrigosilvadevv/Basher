@@ -130,12 +130,14 @@ jobs:
             -exportOptionsPlist /tmp/ExportOptions.plist \
             2>&1 | tee /tmp/export.log | xcpretty --color
 
-          if [ ! -f "$RUNNER_TEMP/ipa/Basher.ipa" ]; then
+          IPA_PATH=$(find $RUNNER_TEMP/ipa -name "*.ipa" | head -1)
+          if [ -z "$IPA_PATH" ]; then
             echo "=== EXPORT LOG ==="
             cat /tmp/export.log
             echo "IPA não foi criado!"
             exit 1
           fi
+          echo "IPA_PATH=$IPA_PATH" >> $GITHUB_ENV
 
       # ── Upload TestFlight ────────────────────────────────────────────────
       - name: Upload to TestFlight via altool
@@ -145,7 +147,7 @@ jobs:
         run: |
           xcrun altool --upload-app \
             --type ios \
-            --file "$RUNNER_TEMP/ipa/Basher.ipa" \
+            --file "$IPA_PATH" \
             --username "$APPLE_ID" \
             --password "$APP_SPECIFIC_PASSWORD" \
             --verbose
@@ -156,5 +158,5 @@ jobs:
         if: always()
         with:
           name: Basher-${{ github.sha }}.ipa
-          path: ${{ runner.temp }}/ipa/Basher.ipa
+          path: ${{ runner.temp }}/ipa/*.ipa
           retention-days: 14
