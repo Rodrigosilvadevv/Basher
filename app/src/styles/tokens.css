@@ -1,0 +1,71 @@
+/*
+  BASHER — "Noite ultravioleta"
+  Preto ofusco como base, roxo em camadas (ametista → orquídea) como luz de balada,
+  vidro fosco por cima e grão de filme para tirar o ar de plástico.
+*/
+:root {
+  /* base */
+  --bg: #07050b;
+  --bg-1: #0b0812;
+  --bg-2: #120c1d;
+  --bg-3: #1a1129;
+
+  /* roxos */
+  --violet-50: #f3ecff;
+  --violet-100: #e9ddff;
+  --violet-200: #d4bdff;
+  --violet-300: #c4a6ff;
+  --violet-400: #a77bff;
+  --violet-500: #8b5cf6;
+  --violet-600: #7c3aed;
+  --violet-700: #5b21b6;
+  --violet-800: #3b1773;
+  --violet-900: #22103f;
+  --orchid: #d946ef;
+  --orchid-soft: #f0abfc;
+  --mint: #5cffb0;
+  --amber: #ffcf6b;
+  --danger: #ff5c8a;
+
+  /* tinta */
+  --ink: #f4eeff;
+  --ink-2: rgba(244, 238, 255, 0.72);
+  --ink-3: rgba(244, 238, 255, 0.46);
+  --ink-4: rgba(244, 238, 255, 0.22);
+
+  /* superfícies de vidro */
+  --glass: rgba(26, 17, 41, 0.62);
+  --glass-2: rgba(38, 25, 62, 0.7);
+  --glass-hi: rgba(255, 255, 255, 0.06);
+  --line: rgba(196, 166, 255, 0.12);
+  --line-2: rgba(196, 166, 255, 0.22);
+
+  /* gradientes de assinatura */
+  --grad-brand: linear-gradient(135deg, #e9ddff 0%, #a77bff 42%, #d946ef 100%);
+  --grad-violet: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 55%, #b03ee8 100%);
+  --grad-plum: linear-gradient(160deg, #2a1350 0%, #12091f 100%);
+  --grad-fade: linear-gradient(180deg, rgba(7, 5, 11, 0) 0%, rgba(7, 5, 11, 0.55) 55%, rgba(7, 5, 11, 0.94) 100%);
+
+  /* tipografia */
+  --font-display: 'Syne', 'Onest Variable', ui-sans-serif, sans-serif;
+  --font-body: 'Onest Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-accent: 'Instrument Serif', ui-serif, Georgia, serif;
+
+  /* raios, sombras, movimento */
+  --r-xs: 8px;
+  --r-sm: 12px;
+  --r-md: 18px;
+  --r-lg: 26px;
+  --r-xl: 34px;
+  --shadow-1: 0 10px 30px -12px rgba(0, 0, 0, 0.7);
+  --shadow-glow: 0 0 0 1px rgba(167, 123, 255, 0.35), 0 12px 40px -8px rgba(124, 58, 237, 0.55);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* layout */
+  --app-max: 520px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --tabbar-h: 64px;
+  --header-h: 56px;
+}

@@ -1,0 +1,17 @@
+{
+  "appId": "br.com.basher.app",
+  "appName": "Basher",
+  "webDir": "dist",
+  "backgroundColor": "#07050b",
+  "ios": {
+    "contentInset": "never",
+    "scrollEnabled": false,
+    "allowsLinkPreview": false,
+    "backgroundColor": "#07050b",
+    "scheme": "Basher"
+  },
+  "plugins": {
+    "StatusBar": { "style": "DARK", "overlaysWebView": true },
+    "LocalNotifications": { "iconColor": "#8B5CF6" }
+  }
+}

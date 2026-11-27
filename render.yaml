@@ -1,0 +1,60 @@
+# Blueprint do Render: crie com "New > Blueprint" apontando para este repositório.
+services:
+  # API: validação das compras da Apple, notificações da App Store e exclusão de conta
+  - type: web
+    name: basher-api
+    runtime: node
+    rootDir: server
+    region: virginia
+    plan: starter # o plano grátis "dorme" e atrasa os webhooks da Apple
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: APPLE_BUNDLE_ID
+        value: br.com.basher.app
+      - key: APPLE_APP_ID
+        sync: false
+      - key: CORS_ORIGINS
+        value: capacitor://localhost,https://basher.com.br,https://www.basher.com.br
+      - key: AGE_WEBHOOK_SECRET
+        sync: false
+
+  # Web: o mesmo app em React (PWA) + páginas legais exigidas pela App Store
+  - type: web
+    name: basher-web
+    runtime: static
+    rootDir: app
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: VITE_SUPABASE_URL
+        sync: false
+      - key: VITE_SUPABASE_ANON_KEY
+        sync: false
+      - key: VITE_API_URL
+        value: https://api.basher.com.br
+      - key: VITE_APP_URL
+        value: https://basher.com.br
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /*
+        name: Permissions-Policy
+        value: geolocation=(self), camera=(self)
