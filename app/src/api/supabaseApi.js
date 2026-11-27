@@ -64,6 +64,27 @@ export const api = {
     },
     async signIn(provider) {
       const native = Capacitor.isNativePlatform();
+
+      // ── Apple nativo (iOS) ──────────────────────────────────────────────
+      if (provider === 'apple' && native) {
+        const { SignInWithApple } = await import('@capacitor-community/apple-sign-in');
+        const result = await SignInWithApple.authorize({
+          clientId: 'br.com.basher.app',
+          redirectURI: 'https://x/',
+          scopes: 'email name',
+          state: Math.random().toString(36).slice(2),
+          nonce: Math.random().toString(36).slice(2),
+        });
+        const { identityToken } = result.response;
+        const { error } = await supabase.auth.signInWithIdToken({
+          provider: 'apple',
+          token: identityToken,
+        });
+        if (error) throw toAppError(error);
+        return;
+      }
+
+      // ── Google / Apple web (PWA / fallback) ────────────────────────────
       const redirectTo = native ? env.DEEP_LINK : `${window.location.origin}/auth/callback`;
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
