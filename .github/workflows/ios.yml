@@ -76,6 +76,7 @@ jobs:
       # ── Build & Archive ──────────────────────────────────────────────────
       - name: Build archive
         run: |
+          set -o pipefail
           xcodebuild archive \
             -project app/ios/App/App.xcodeproj \
             -scheme "$XCODE_SCHEME" \
@@ -86,11 +87,19 @@ jobs:
             PROVISIONING_PROFILE_SPECIFIER="Basher" \
             CODE_SIGN_IDENTITY="iPhone Distribution" \
             DEVELOPMENT_TEAM=${{ secrets.APPLE_TEAM_ID }} \
-            | xcpretty
+            2>&1 | tee /tmp/xcodebuild.log | xcpretty --color
+
+          if [ ! -d "$RUNNER_TEMP/Basher.xcarchive" ]; then
+            echo "=== XCODEBUILD LOG ==="
+            cat /tmp/xcodebuild.log
+            echo "Archive não foi criado!"
+            exit 1
+          fi
 
       - name: Export IPA
         run: |
-          cat > /tmp/ExportOptions.plist << 'EOF'
+          set -o pipefail
+          cat > /tmp/ExportOptions.plist << EOF
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
@@ -98,7 +107,7 @@ jobs:
             <key>method</key>
             <string>app-store-connect</string>
             <key>teamID</key>
-            <string>SUBSTITUA_SEU_TEAM_ID</string>
+            <string>${{ secrets.APPLE_TEAM_ID }}</string>
             <key>uploadBitcode</key>
             <false/>
             <key>uploadSymbols</key>
@@ -113,14 +122,22 @@ jobs:
           </dict>
           </plist>
           EOF
-          sed -i '' "s/SUBSTITUA_SEU_TEAM_ID/${{ secrets.APPLE_TEAM_ID }}/g" /tmp/ExportOptions.plist
+
+          mkdir -p $RUNNER_TEMP/ipa
           xcodebuild -exportArchive \
             -archivePath $RUNNER_TEMP/Basher.xcarchive \
             -exportPath $RUNNER_TEMP/ipa \
             -exportOptionsPlist /tmp/ExportOptions.plist \
-            | xcpretty
+            2>&1 | tee /tmp/export.log | xcpretty --color
 
-      # ── Upload TestFlight ─────────────────────────────────────────────────
+          if [ ! -f "$RUNNER_TEMP/ipa/Basher.ipa" ]; then
+            echo "=== EXPORT LOG ==="
+            cat /tmp/export.log
+            echo "IPA não foi criado!"
+            exit 1
+          fi
+
+      # ── Upload TestFlight ────────────────────────────────────────────────
       - name: Upload to TestFlight via altool
         env:
           APPLE_ID: ${{ secrets.APPLE_ID }}
@@ -133,7 +150,7 @@ jobs:
             --password "$APP_SPECIFIC_PASSWORD" \
             --verbose
 
-      # ── Artefato (backup) ─────────────────────────────────────────────────
+      # ── Artefato (backup) ────────────────────────────────────────────────
       - name: Upload IPA as artifact
         uses: actions/upload-artifact@v4
         if: always()
