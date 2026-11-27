@@ -73,6 +73,12 @@ jobs:
           echo "$PROVISIONING_PROFILE_BASE64" | base64 --decode \
             > ~/Library/MobileDevice/Provisioning\ Profiles/basher.mobileprovision
 
+      # ── Bump build number ────────────────────────────────────────────────
+      - name: Bump build number
+        run: |
+          cd app/ios/App
+          xcrun agvtool new-version -all ${{ github.run_number }}
+
       # ── Build & Archive ──────────────────────────────────────────────────
       - name: Build archive
         run: |
