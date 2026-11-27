@@ -68,17 +68,24 @@ export const api = {
       // ── Apple nativo (iOS) ──────────────────────────────────────────────
       if (provider === 'apple' && native) {
         const { SignInWithApple } = await import('@capacitor-community/apple-sign-in');
+
+        // Apple exige o nonce em SHA-256; Supabase precisa do raw pra verificar
+        const rawNonce = Math.random().toString(36).slice(2);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(rawNonce));
+        const hashedNonce = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+
         const result = await SignInWithApple.authorize({
           clientId: 'br.com.basher.app',
           redirectURI: 'https://x/',
           scopes: 'email name',
           state: Math.random().toString(36).slice(2),
-          nonce: Math.random().toString(36).slice(2),
+          nonce: hashedNonce,  // Apple recebe o hash
         });
         const { identityToken } = result.response;
         const { error } = await supabase.auth.signInWithIdToken({
           provider: 'apple',
           token: identityToken,
+          nonce: rawNonce,     // Supabase recebe o raw
         });
         if (error) throw toAppError(error);
         return;
