@@ -1,6 +1,33 @@
 import { Capacitor } from '@capacitor/core';
 import { supabase } from '../lib/supabase.js';
 
+// ── APNs nativo (iOS) ─────────────────────────────────────────────────────────
+export async function registerAPNs(userId) {
+  if (!Capacitor.isNativePlatform()) return;
+  try {
+    const { PushNotifications } = await import('@capacitor/push-notifications');
+    const perm = await PushNotifications.requestPermissions();
+    if (perm.receive !== 'granted') return;
+    await PushNotifications.register();
+    PushNotifications.addListener('registration', async ({ value: token }) => {
+      await supabase.from('push_tokens').upsert(
+        { user_id: userId, token, platform: 'ios' },
+        { onConflict: 'user_id,token' }
+      );
+    });
+    PushNotifications.addListener('registrationError', (err) => {
+      console.warn('[apns] registration error', err);
+    });
+    // Abre a tela certa quando o usuário toca na notificação
+    PushNotifications.addListener('pushNotificationActionPerformed', ({ notification }) => {
+      const url = notification?.data?.url;
+      if (url) window.location.hash = url;
+    });
+  } catch (e) {
+    console.warn('[apns]', e);
+  }
+}
+
 // ── Web Push (PWA) ────────────────────────────────────────────────────────────
 function urlB64ToUint8(base64String) {
   const pad = '='.repeat((4 - base64String.length % 4) % 4)
@@ -25,12 +52,11 @@ export async function registerWebPush(userId) {
       applicationServerKey: urlB64ToUint8(vapidKey)
     })
 
-    // Salva no banco (ignora duplicata silenciosamente)
-    const subJson = sub.toJSON()
-    await supabase.from('push_subscriptions').insert({
+    // Salva no banco
+    await supabase.from('push_subscriptions').upsert({
       user_id: userId,
-      subscription: subJson,
-    }).throwOnError().catch(() => {}) // ignora conflito de unique
+      subscription: sub.toJSON()
+    }, { onConflict: 'user_id,subscription->>endpoint' })
 
     console.log('[push] subscription registrada')
   } catch (e) {
