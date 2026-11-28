@@ -9,10 +9,19 @@ export async function registerAPNs(userId) {
     // Listeners ANTES do register() para não perder o evento de token
     PushNotifications.addListener('registration', async ({ value: token }) => {
       console.log('[apns] token recebido', token);
-      await supabase.from('push_tokens').upsert(
-        { user_id: userId, token, platform: 'ios' },
+      // userId pode não estar disponível no mount — busca da sessão como fallback
+      let uid = userId;
+      if (!uid) {
+        const { data: { session } } = await supabase.auth.getSession();
+        uid = session?.user?.id;
+      }
+      if (!uid) { console.warn('[apns] sem userId para salvar token'); return; }
+      const { error } = await supabase.from('push_tokens').upsert(
+        { user_id: uid, token, platform: 'ios' },
         { onConflict: 'user_id,token' }
       );
+      if (error) console.warn('[apns] erro ao salvar token', error);
+      else console.log('[apns] token salvo com sucesso');
     });
     PushNotifications.addListener('registrationError', (err) => {
       console.warn('[apns] registration error', err);

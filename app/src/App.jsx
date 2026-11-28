@@ -135,11 +135,22 @@ function useLiveApp() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // registra Push (Web PWA ou APNs nativo iOS)
+  // Chama imediatamente se me já estiver disponível, senão aguarda onAuthStateChange
   useEffect(() => {
     const me = useApp.getState().me;
     if (me?.id) {
       registerWebPush(me.id).catch(() => {});
       registerAPNs(me.id).catch(() => {});
+    } else {
+      // me ainda não carregou — aguarda sessão do Supabase
+      import('./lib/supabase.js').then(({ supabase }) => {
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          if (session?.user?.id) {
+            registerWebPush(session.user.id).catch(() => {});
+            registerAPNs(session.user.id).catch(() => {});
+          }
+        });
+      });
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 }
