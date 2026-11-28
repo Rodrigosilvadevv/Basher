@@ -6,10 +6,9 @@ export async function registerAPNs(userId) {
   if (!Capacitor.isNativePlatform()) return;
   try {
     const { PushNotifications } = await import('@capacitor/push-notifications');
-    const perm = await PushNotifications.requestPermissions();
-    if (perm.receive !== 'granted') return;
-    await PushNotifications.register();
+    // Listeners ANTES do register() para não perder o evento de token
     PushNotifications.addListener('registration', async ({ value: token }) => {
+      console.log('[apns] token recebido', token);
       await supabase.from('push_tokens').upsert(
         { user_id: userId, token, platform: 'ios' },
         { onConflict: 'user_id,token' }
@@ -23,6 +22,9 @@ export async function registerAPNs(userId) {
       const url = notification?.data?.url;
       if (url) window.location.hash = url;
     });
+    const perm = await PushNotifications.requestPermissions();
+    if (perm.receive !== 'granted') return;
+    await PushNotifications.register();
   } catch (e) {
     console.warn('[apns]', e);
   }
