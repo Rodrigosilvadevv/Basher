@@ -6,7 +6,7 @@ import { env, DEFAULT_COORDS } from './lib/env';
 import { useApp, toast } from './store/useApp';
 import { getPosition } from './services/location';
 import { listenTransactions } from './services/purchases';
-import { registerWebPush } from './services/notifications';
+import { registerWebPush, registerAPNs } from './services/notifications';
 import Aurora from './components/Aurora';
 import Logo from './components/Logo';
 import TabBar from './components/TabBar';
@@ -134,10 +134,13 @@ function useLiveApp() {
     if (loc.pathname === '/' && TAB_ROUTES.includes(last) && last !== '/') nav(last, { replace: true });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // registra Web Push (PWA)
+  // registra Push (Web PWA ou APNs nativo iOS)
   useEffect(() => {
     const me = useApp.getState().me;
-    if (me?.id) registerWebPush(me.id).catch(() => {});
+    if (me?.id) {
+      registerWebPush(me.id).catch(() => {});
+      registerAPNs(me.id).catch(() => {});
+    }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 }
 
