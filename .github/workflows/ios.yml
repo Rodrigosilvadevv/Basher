@@ -48,6 +48,32 @@ jobs:
         working-directory: app
         run: npx cap sync ios
 
+      # ── Entitlements (APNs + Sign in with Apple) ─────────────────────────
+      # cap sync pode gerar App.entitlements sem aps-environment nem applesignin.
+      # PlistBuddy injeta os dois (Add tenta inserir; Set/true ignoram se já existe).
+      - name: Set entitlements (APNs + Sign in with Apple)
+        run: |
+          ENTITLEMENTS="$GITHUB_WORKSPACE/app/ios/App/App/App.entitlements"
+          mkdir -p "$(dirname "$ENTITLEMENTS")"
+          if [ ! -f "$ENTITLEMENTS" ]; then
+            cat > "$ENTITLEMENTS" << 'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+          </dict>
+          </plist>
+          EOF
+          fi
+          # APNs
+          /usr/libexec/PlistBuddy -c "Add :aps-environment string production" "$ENTITLEMENTS" 2>/dev/null || \
+          /usr/libexec/PlistBuddy -c "Set :aps-environment string production" "$ENTITLEMENTS"
+          # Sign in with Apple
+          /usr/libexec/PlistBuddy -c "Add :com.apple.developer.applesignin array" "$ENTITLEMENTS" 2>/dev/null || true
+          /usr/libexec/PlistBuddy -c "Add :com.apple.developer.applesignin:0 string Default" "$ENTITLEMENTS" 2>/dev/null || true
+          echo "✅ App.entitlements:"
+          cat "$ENTITLEMENTS"
+
       # ── Certificados ─────────────────────────────────────────────────────
       - name: Import signing certificate
         env:
